@@ -402,6 +402,49 @@ function JsonCompress(){
 	}
 }
 
+// ========== 复制到剪贴板 ==========
+function CopyToClipboard(){
+	var canvas = document.getElementById("Canvas");
+	try{
+		if(!canvas || canvas.innerHTML.trim() == ""){
+			alert("内容区为空，无法复制");
+			return;
+		}
+		// 获取纯文本内容
+		var text = canvas.innerText || canvas.textContent;
+		
+		// 使用现代 Clipboard API
+		if(navigator.clipboard && window.isSecureContext){
+			navigator.clipboard.writeText(text).then(function(){
+				alert("复制成功！");
+			}, function(err){
+				alert("复制失败：" + err);
+			});
+		}else{
+			// 降级方案：使用 textarea
+			var textarea = document.createElement('textarea');
+			textarea.value = text;
+			textarea.style.position = 'fixed';
+			textarea.style.opacity = '0';
+			document.body.appendChild(textarea);
+			textarea.select();
+			try{
+				var successful = document.execCommand('copy');
+				if(successful){
+					alert("复制成功！");
+				}else{
+					alert("复制失败，请手动复制");
+				}
+			}catch(err){
+				alert("复制失败：" + err);
+			}
+			document.body.removeChild(textarea);
+		}
+	}catch(e){
+		alert("复制失败,错误信息:\n"+e.message);
+	}
+}
+
 function ProcessObject(obj, indent, addComma, isArray, isPropertyContent){
 
   var html = "";
@@ -540,7 +583,16 @@ function GetRow(indent, data, isPropertyContent){
 </script>
 
 <style>
-.Canvas{ font: 10pt Georgia; background-color:#ECECEC; color:#000000; border:solid 1px #CECECE;}
+.Canvas{ 
+	font: 10pt Georgia; 
+	background-color:#ECECEC; 
+	color:#000000; 
+	border:solid 1px #CECECE; 
+	overflow-x: hidden; 
+	overflow-y: auto; 
+	word-wrap: break-word; 
+	white-space: pre-wrap;
+}
 .ObjectBrace{ color:#00AA00; font-weight:bold;}
 .ArrayBrace{ color:#0033FF; font-weight:bold;}
 .PropertyName{ color:#CC0000; font-weight:bold;}
@@ -550,7 +602,13 @@ function GetRow(indent, data, isPropertyContent){
 .Function{  color:#AA6633;  text-decoration:italic;}
 .Null{  color:#0000FF;}
 .Comma{  color:#000000;  font-weight:bold;}
-PRE.CodeContainer{  margin-top:0px;  margin-bottom:0px;}
+PRE.CodeContainer{ 
+	margin-top:0px; 
+	margin-bottom:0px; 
+	white-space: pre-wrap; 
+	word-wrap: break-word; 
+	overflow-wrap: break-word;
+}
 </style>
 </head>
 
@@ -612,8 +670,11 @@ a {
 <input type="Button" value="首字母大写" onClick="ToTitleCase()" style="display:block; margin-bottom:5px;"/>
 <input type="Button" value="字符统计" onClick="CharCount()" style="display:block;"/>
 </div>
-<div style="display:inline-block; vertical-align:top;">
+<div style="display:inline-block; vertical-align:top; margin-right:10px;">
 <input type="Button" value="JSON压缩" onClick="JsonCompress()" style="display:block; margin-bottom:5px;"/>
+</div>
+<div style="display:inline-block; vertical-align:top;">
+<input type="Button" value="复制内容" onClick="CopyToClipboard()" style="display:block; margin-bottom:5px;"/>
 </div>
 <BR/>
 <div id="Canvas" class="Canvas"></div>
