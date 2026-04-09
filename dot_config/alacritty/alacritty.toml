@@ -1,0 +1,139 @@
+# Colors (Aura Theme)
+
+[window.dimensions]
+columns = 106
+lines = 25
+
+[window.padding]
+x = 20
+y = 22
+
+[window]
+decorations = "transparent"
+
+[scrolling]
+# 回滚缓冲区中的最大行数，指定"0"将禁用滚动。
+history = 100000
+# 滚动行数
+multiplier = 4
+
+[selection]
+semantic_escape_chars = ",│`|:\"' ()[]{}<>"
+save_to_clipboard = true
+
+# Default colors
+[colors.primary]
+background = "#15141b"
+foreground = "#edecee"
+
+[colors.cursor]
+cursor = "#a277ff"
+
+[colors.selection]
+text = "CellForeground"
+background = "#29263c"
+
+# Normal colors
+[colors.normal]
+black = "#110f18"
+red = "#ff6767"
+green = "#61ffca"
+yellow = "#ffca85"
+blue = "#a277ff"
+magenta = "#a277ff"
+cyan = "#61ffca"
+white = "#edecee"
+
+# Bright colors
+[colors.bright]
+black = "#4d4d4d"
+red = "#ff6767"
+green = "#61ffca"
+yellow = "#ffca85"
+blue = "#a277ff"
+magenta = "#a277ff"
+cyan = "#61ffca"
+white = "#edecee"
+
+[colors.search.matches]
+foreground = "#000000"
+background = "#ffffff"
+
+[colors.search.focused_match]
+foreground = "#ffffff"
+background = "#9F7AF5"
+
+[font]
+# 字大小
+size = 17.0
+
+[font.offset]
+x = 0
+y = 9
+
+[font.glyph_offset]
+x = 0
+y = 3
+
+[[keyboard.bindings]]
+key = "R"
+mods = "Command"
+mode = "~Vi|~Search"
+chars = "\u000c"
+
+[[keyboard.bindings]]
+key = "R"
+mods = "Command"
+mode = "~Vi|~Search"
+action = "ClearHistory"
+
+[[keyboard.bindings]]
+key = "W"
+mods = "Command"
+action = "Hide"
+
+[[keyboard.bindings]]
+key = "W"
+mods = "Command|Shift"
+action = "Quit"
+
+[[keyboard.bindings]]
+key = "N"
+mods = "Command"
+action = "SpawnNewInstance"
+
+[[keyboard.bindings]]
+key = "T"
+mods = "Command"
+action = "CreateNewWindow"
+
+[[keyboard.bindings]]
+key = "Left"
+mods = "Alt"
+chars = "\u001bb" # Skip word left
+
+[[keyboard.bindings]]
+key = "Right"
+mods = "Alt"
+chars = "\u001bf" # Skip word right
+
+[[keyboard.bindings]]
+key = "Left"
+mods = "Command"
+chars = "\u0001" # Home
+
+[[keyboard.bindings]]
+key = "Right"
+mods = "Command"
+chars = "\u0005" # End
+
+[[keyboard.bindings]]
+key = "Back"
+mods = "Command"
+chars = "\u0015" # Delete line
+
+[[keyboard.bindings]]
+key = "Back"
+mods = "Alt"
+chars = "\u001b\u007f" # Delete word
+
