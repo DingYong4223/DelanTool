@@ -1,0 +1,30 @@
+
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export JAVA_HOME=/Users/delanding/Library/Java/JavaVirtualMachines/corretto-17.0.15/Contents/Home
+export PATH="/opt/homebrew/opt/python@3.13/libexec/bin:$PATH"
+export PATH=$PATH:~/Library/OpenHarmony/Sdk/14/toolchains
+
+export ANDROID_SDK="/Users/delanding/Library/Android/sdk"
+export PATH="$PATH:$ANDROID_SDK/platform-tools"
+export PATH="$HOME/Library/Python/3.9/bin:$PATH"
+
+eval "$(rbenv init - zsh)"
+
+# Added by CatPaw
+export PATH="/Users/delanding/.catpaw/bin:$PATH"
+
+eval "$(starship init zsh)"
+
+eval "$(zoxide init zsh)"
+
+source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+# Cocos2d-x Environment
+export COCOS2D_ROOT=/Users/delanding/DevSoft/cocos2d-x
+export PATH=$COCOS2D_ROOT/tools/cocos2d-console/bin:$PATH
+
+source ~/.moaextrc
+eval "$(/Users/delanding/.local/bin/mise activate zsh)"
+
+# custom functions
+source ~/.fun
