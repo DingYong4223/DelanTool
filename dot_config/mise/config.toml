@@ -1,2 +1,9 @@
 [tools]
+cmake = "4.3.1"
+fastfetch = "2.61.0"
+fzf = "latest"
+node = "22.14.0"
 python = "3.14.3"
+starship = "latest"
+yazi = "26.1.22"
+zoxide = "latest"
