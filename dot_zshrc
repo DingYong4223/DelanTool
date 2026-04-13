@@ -26,5 +26,7 @@ export PATH=$COCOS2D_ROOT/tools/cocos2d-console/bin:$PATH
 source ~/.moaextrc
 eval "$(/Users/delanding/.local/bin/mise activate zsh)"
 
+export PATH="$HOME/.local/bin:$PATH"
+
 # custom functions
 source ~/.fun

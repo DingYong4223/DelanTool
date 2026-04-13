@@ -19,10 +19,10 @@ image_quality = 75
 
 [opener]
 edit = [
-  { run = 'code %s', desc = "VSCode", for = "unix" },
+  { run = 'subl %s', desc = "VSCode", for = "unix" },
 ]
 open = [
-  { run = 'open %s', desc = "Open", for = "macos" },
+  { run = 'subl %s', desc = "Open", for = "macos" },
 ]
 reveal = [
   { run = 'open -R %1', desc = "Reveal in Finder", for = "macos" },
