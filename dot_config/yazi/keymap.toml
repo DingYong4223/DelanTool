@@ -1,0 +1,5 @@
+[[mgr.prepend_keymap]]
+on   = [ "f", "g" ]
+run  = "plugin fg"
+desc = "通过内容搜索文件 (fzf + ripgrep 混合)"
+
