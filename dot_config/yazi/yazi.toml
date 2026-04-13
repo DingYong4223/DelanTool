@@ -18,23 +18,23 @@ image_filter = "lanczos3"
 image_quality = 75
 
 [opener]
-edit = [
-  { run = 'subl %s', desc = "VSCode", for = "unix" },
+nvim = [
+  { run = 'nvim %s', block=true, desc = "neovim", for = "unix" },
 ]
-open = [
+subl = [
   { run = 'subl %s', desc = "Open", for = "macos" },
 ]
-reveal = [
+def = [
   { run = 'open -R %1', desc = "Reveal in Finder", for = "macos" },
 ]
 
 [open]
 prepend_rules = [
-  { mime = "text/*", use = ["edit", "open", "reveal"] },
-  { mime = "application/json", use = ["edit", "open", "reveal"] },
-  { mime = "*/javascript", use = ["edit", "open", "reveal"] },
-  { mime = "*/typescript", use = ["edit", "open", "reveal"] },
-  { mime = "*/x-yaml", use = ["edit", "open", "reveal"] },
+  { mime = "text/*", use = ["nvim", "subl", "def"] },
+  { mime = "application/json", use = ["nvim", "subl", "def"] },
+  { mime = "*/javascript", use = ["nvim", "subl", "def"] },
+  { mime = "*/typescript", use = ["nvim", "subl", "def"] },
+  { mime = "*/x-yaml", use = ["nvim", "subl", "def"] },
 ]
 
 [tasks]

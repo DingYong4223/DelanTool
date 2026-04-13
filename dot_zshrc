@@ -28,5 +28,7 @@ eval "$(/Users/delanding/.local/bin/mise activate zsh)"
 
 export PATH="$HOME/.local/bin:$PATH"
 
+alias vim='nvim'
+
 # custom functions
 source ~/.fun
