@@ -1,6 +1,6 @@
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
-export JAVA_HOME=/Users/delanding/Library/Java/JavaVirtualMachines/corretto-17.0.15/Contents/Home
+export JAVA_HOME=/Applications/Android\ Studio.app/Contents/jbr/Contents/Home
 export PATH="/opt/homebrew/opt/python@3.13/libexec/bin:$PATH"
 export PATH=$PATH:~/Library/OpenHarmony/Sdk/14/toolchains
 
@@ -23,7 +23,6 @@ source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 export COCOS2D_ROOT=/Users/delanding/DevSoft/cocos2d-x
 export PATH=$COCOS2D_ROOT/tools/cocos2d-console/bin:$PATH
 
-source ~/.moaextrc
 eval "$(/Users/delanding/.local/bin/mise activate zsh)"
 
 export PATH="$HOME/.local/bin:$PATH"
@@ -32,3 +31,6 @@ alias vim='nvim'
 
 # custom functions
 source ~/.fun
+
+
+source ~/.moaextrc
