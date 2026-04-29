@@ -402,6 +402,77 @@ function JsonCompress(){
 	}
 }
 
+// ========== Schema 格式化 ==========
+function SchemaFormat(){
+	var input = document.getElementById("RawJson").value.trim();
+	try{
+		if(input == ""){
+			alert("请输入Schema URL");
+			return;
+		}
+		// 提取 scheme（://前面的部分）
+		var schemeEnd = input.indexOf("://");
+		if(schemeEnd === -1){
+			alert("无效的Schema URL，缺少://");
+			return;
+		}
+		var scheme = input.substring(0, schemeEnd);
+		var rest = input.substring(schemeEnd + 3);
+
+		// 提取 host 和 path（?前面的部分）
+		var queryStart = rest.indexOf("?");
+		var hostPath = queryStart === -1 ? rest : rest.substring(0, queryStart);
+		var queryString = queryStart === -1 ? "" : rest.substring(queryStart + 1);
+
+		var slashIdx = hostPath.indexOf("/");
+		var host = slashIdx === -1 ? hostPath : hostPath.substring(0, slashIdx);
+		var path = slashIdx === -1 ? "" : hostPath.substring(slashIdx + 1);
+		var uri = hostPath;
+
+		// 解析参数
+		var params = [];
+		if(queryString !== ""){
+			var pairs = queryString.split("&");
+			for(var i = 0; i < pairs.length; i++){
+				var eqIdx = pairs[i].indexOf("=");
+				if(eqIdx === -1){
+					params.push({ key: pairs[i], value: "" });
+				} else {
+					var k = pairs[i].substring(0, eqIdx);
+					var v = pairs[i].substring(eqIdx + 1);
+					try{ v = decodeURIComponent(v); }catch(e){}
+					params.push({ key: k, value: v });
+				}
+			}
+		}
+
+		var html = "<div style='padding:10px; font-family:monospace;'>";
+		html += "<p><span style='color:#CC0000;font-weight:bold;'>Schema:</span> <span style='color:#007777;'>" + scheme + "</span></p>";
+		html += "<p><span style='color:#CC0000;font-weight:bold;'>Uri:</span> <span style='color:#007777;'>" + uri + "</span></p>";
+		html += "<p><span style='color:#CC0000;font-weight:bold;'>Host:</span> <span style='color:#007777;'>" + host + "</span></p>";
+		html += "<p><span style='color:#CC0000;font-weight:bold;'>Path:</span> <span style='color:#007777;'>" + path + "</span></p>";
+		if(params.length > 0){
+			html += "<p><span style='color:#CC0000;font-weight:bold;'>Params:</span></p>";
+			html += "<table style='border-collapse:collapse; margin-left:16px;'>";
+			for(var i = 0; i < params.length; i++){
+				html += "<tr>";
+				html += "<td style='padding:2px 8px 2px 0; color:#AA00AA; font-weight:bold;'>" + params[i].key + "</td>";
+				html += "<td style='padding:2px 4px; color:#000;'>-&gt;</td>";
+				html += "<td style='padding:2px 0 2px 8px; color:#007777;'>" + params[i].value + "</td>";
+				html += "</tr>";
+			}
+			html += "</table>";
+		} else {
+			html += "<p><span style='color:#CC0000;font-weight:bold;'>Params:</span> <span style='color:#999;'>(无)</span></p>";
+		}
+		html += "</div>";
+		document.getElementById("Canvas").innerHTML = html;
+	}catch(e){
+		alert("Schema格式化失败,错误信息:\n"+e.message);
+		document.getElementById("Canvas").innerHTML = "";
+	}
+}
+
 // ========== 复制到剪贴板 ==========
 function CopyToClipboard(){
 	var canvas = document.getElementById("Canvas");
@@ -672,6 +743,7 @@ a {
 </div>
 <div style="display:inline-block; vertical-align:top; margin-right:10px;">
 <input type="Button" value="JSON压缩" onClick="JsonCompress()" style="display:block; margin-bottom:5px;"/>
+<input type="Button" value="Schema格式化" onClick="SchemaFormat()" style="display:block;"/>
 </div>
 <div style="display:inline-block; vertical-align:top;">
 <input type="Button" value="复制内容" onClick="CopyToClipboard()" style="display:block; margin-bottom:5px;"/>
