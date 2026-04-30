@@ -1,0 +1,86 @@
+# Ghostty Configuration
+# Docs: https://ghostty.org/docs/config/reference
+
+# =============================================================================
+# Shell
+# =============================================================================
+
+command = /opt/homebrew/bin/fish
+
+# =============================================================================
+# Font
+# =============================================================================
+
+font-family = "JetBrains Mono"
+font-size = 14
+
+# =============================================================================
+# Theme
+# =============================================================================
+
+# Light/dark 自适应，也可以直接写单个主题名
+# 可用主题列表：ghostty +list-themes
+theme = Catppuccin Mocha
+
+# =============================================================================
+# Cursor
+# =============================================================================
+
+cursor-style = bar
+cursor-style-blink = true
+cursor-opacity = 1.0
+
+# =============================================================================
+# Window
+# =============================================================================
+
+window-padding-x = 8
+window-padding-y = 8
+window-inherit-working-directory = true
+window-decoration = auto
+
+# 启动时窗口大小（单位：字符格）
+window-width = 135
+window-height = 35
+
+# =============================================================================
+# Background
+# =============================================================================
+
+background-opacity = 0.95
+background-blur = true
+
+# =============================================================================
+# Shell Integration
+# =============================================================================
+
+# detect 会自动识别 fish/zsh/bash
+shell-integration = detect
+
+# =============================================================================
+# Keybindings
+# =============================================================================
+
+# 新标签页 / 窗口
+keybind = cmd+t=new_tab
+keybind = cmd+n=new_window
+
+# 分屏
+keybind = cmd+d=new_split:right
+keybind = cmd+shift+d=new_split:down
+
+# 关闭
+keybind = cmd+w=close_surface
+
+# 切换标签页
+keybind = cmd+shift+]=next_tab
+keybind = cmd+shift+[=previous_tab
+
+# 跳转到上/下一个命令提示符（需要 shell integration）
+keybind = cmd+shift+up=jump_to_prompt:-1
+keybind = cmd+shift+down=jump_to_prompt:1
+
+# 字体大小
+keybind = cmd+equal=increase_font_size:1
+keybind = cmd+minus=decrease_font_size:1
+keybind = cmd+0=reset_font_size
