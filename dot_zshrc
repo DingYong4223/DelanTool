@@ -4,7 +4,7 @@ export JAVA_HOME=/Applications/Android\ Studio.app/Contents/jbr/Contents/Home
 export PATH="/opt/homebrew/opt/python@3.13/libexec/bin:$PATH"
 export PATH=$PATH:~/Library/OpenHarmony/Sdk/14/toolchains
 
-export ANDROID_SDK="/Users/delanding/Library/Android/sdk"
+export ANDROID_SDK="~/Library/Android/sdk"
 export PATH="$PATH:$ANDROID_SDK/platform-tools"
 export PATH="$HOME/Library/Python/3.9/bin:$PATH"
 
@@ -12,20 +12,22 @@ export PATH="$HOME/Library/Python/3.9/bin:$PATH"
 export PATH=~/devsoft/DeepSeek-TUI/target/release:$PATH
 
 # Cocos2d-x Environment
-export COCOS2D_ROOT=/Users/delanding/DevSoft/cocos2d-x
+export COCOS2D_ROOT=~/DevSoft/cocos2d-x
 export PATH=$COCOS2D_ROOT/tools/cocos2d-console/bin:$PATH
 
 # Added by CatPaw
-export PATH="/Users/delanding/.catpaw/bin:$PATH"
 
 eval "$(rbenv init - zsh)"
 eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
-eval "$(/Users/delanding/.local/bin/mise activate zsh)"
+eval "$(~/.local/bin/mise activate zsh)"
 export PATH=$HOME/.local/bin:$PATH
 alias vim='nvim'
 # custom functions
 source ~/.fun
 
 source ~/.moaextrc
+
+# Added by catdesk
+export PATH="$HOME/.catdesk/bin:$PATH"
