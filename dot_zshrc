@@ -2,9 +2,8 @@
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export JAVA_HOME=/Applications/Android\ Studio.app/Contents/jbr/Contents/Home
 export PATH="/opt/homebrew/opt/python@3.13/libexec/bin:$PATH"
-export PATH=$PATH:~/Library/OpenHarmony/Sdk/14/toolchains
 
-export ANDROID_SDK="~/Library/Android/sdk"
+export ANDROID_SDK=~/Library/Android/sdk
 export PATH="$PATH:$ANDROID_SDK/platform-tools"
 export PATH="$HOME/Library/Python/3.9/bin:$PATH"
 
@@ -27,7 +26,11 @@ alias vim='nvim'
 # custom functions
 source ~/.fun
 
-source ~/.moaextrc
 
 # Added by catdesk
 export PATH="$HOME/.catdesk/bin:$PATH"
+
+# Added by CatPaw
+export PATH="/Users/delanding/.catpaw/bin:$PATH"
+
+source ~/.moaextrc
