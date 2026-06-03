@@ -29,8 +29,17 @@ source ~/.fun
 
 # Added by catdesk
 export PATH="$HOME/.catdesk/bin:$PATH"
+export PATH="$HOME/.venv/bin:$PATH"
 
 # Added by CatPaw
 export PATH="/Users/delanding/.catpaw/bin:$PATH"
 
+
 source ~/.moaextrc
+
+# bun completions
+[ -s "/Users/delanding/.bun/_bun" ] && source "/Users/delanding/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
