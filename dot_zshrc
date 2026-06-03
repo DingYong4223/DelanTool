@@ -9,6 +9,7 @@ export PATH="$HOME/Library/Python/3.9/bin:$PATH"
 
 # for develop
 export PATH=~/devsoft/DeepSeek-TUI/target/release:$PATH
+export PATH=~/devsoft/oh-my-pi/packages/coding-agent/dist:$PATH
 
 # Cocos2d-x Environment
 export COCOS2D_ROOT=~/DevSoft/cocos2d-x
