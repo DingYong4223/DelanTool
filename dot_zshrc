@@ -8,7 +8,7 @@ export PATH="$PATH:$ANDROID_SDK/platform-tools"
 export PATH="$HOME/Library/Python/3.9/bin:$PATH"
 
 # for develop
-export PATH=~/devsoft/DeepSeek-TUI/target/release:$PATH
+export PATH=~/devsoft/CodeWhale/target/release:$PATH
 export PATH=~/devsoft/oh-my-pi/packages/coding-agent/dist:$PATH
 
 # Cocos2d-x Environment
@@ -31,12 +31,12 @@ source ~/.fun
 # Added by catdesk
 export PATH="$HOME/.catdesk/bin:$PATH"
 export PATH="$HOME/.venv/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 
 # Added by CatPaw
 export PATH="/Users/delanding/.catpaw/bin:$PATH"
 
 
-source ~/.moaextrc
 
 # bun completions
 [ -s "/Users/delanding/.bun/_bun" ] && source "/Users/delanding/.bun/_bun"
@@ -44,3 +44,6 @@ source ~/.moaextrc
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
+
+
+source ~/.moaextrc
