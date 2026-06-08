@@ -22,7 +22,6 @@ eval "$(starship init zsh)"
 eval "$(zoxide init zsh)"
 source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
 eval "$(~/.local/bin/mise activate zsh)"
-export PATH=$HOME/.local/bin:$PATH
 alias vim='nvim'
 # custom functions
 source ~/.fun
