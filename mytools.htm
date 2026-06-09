@@ -473,6 +473,47 @@ function SchemaFormat(){
 	}
 }
 
+// ========== 二维码生成 ==========
+function GenerateQRCode(){
+	var input = document.getElementById("RawJson").value.trim();
+	try{
+		if(input == ""){
+			alert("请输入要生成二维码的内容");
+			return;
+		}
+		var canvas = document.getElementById("Canvas");
+		canvas.innerHTML = "";
+
+		var wrapper = document.createElement("div");
+		wrapper.style.padding = "10px";
+
+		var qrDiv = document.createElement("div");
+		qrDiv.id = "qrcode-output";
+		wrapper.appendChild(qrDiv);
+
+		var hint = document.createElement("p");
+		hint.style.color = "#666";
+		hint.style.fontSize = "12px";
+		hint.style.marginTop = "8px";
+		hint.textContent = "内容：" + (input.length > 60 ? input.substring(0, 60) + "…" : input);
+		wrapper.appendChild(hint);
+
+		canvas.appendChild(wrapper);
+
+		new QRCode(qrDiv, {
+			text: input,
+			width: 200,
+			height: 200,
+			colorDark: "#000000",
+			colorLight: "#ffffff",
+			correctLevel: QRCode.CorrectLevel.M
+		});
+	}catch(e){
+		alert("二维码生成失败,错误信息:\n"+e.message);
+		document.getElementById("Canvas").innerHTML = "";
+	}
+}
+
 // ========== 复制到剪贴板 ==========
 function CopyToClipboard(){
 	var canvas = document.getElementById("Canvas");
@@ -681,6 +722,7 @@ PRE.CodeContainer{
 	overflow-wrap: break-word;
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 
 <body>
@@ -744,6 +786,9 @@ a {
 <div style="display:inline-block; vertical-align:top; margin-right:10px;">
 <input type="Button" value="JSON压缩" onClick="JsonCompress()" style="display:block; margin-bottom:5px;"/>
 <input type="Button" value="Schema格式化" onClick="SchemaFormat()" style="display:block;"/>
+</div>
+<div style="display:inline-block; vertical-align:top; margin-right:10px;">
+<input type="Button" value="生成二维码" onClick="GenerateQRCode()" style="display:block; margin-bottom:5px;"/>
 </div>
 <div style="display:inline-block; vertical-align:top;">
 <input type="Button" value="复制内容" onClick="CopyToClipboard()" style="display:block; margin-bottom:5px;"/>
