@@ -1,0 +1,12 @@
+api_key = "sk-b9659c3a36414adaaef575f7e8731f20"
+default_text_model = "deepseek-v4-pro"
+reasoning_effort = "auto"
+
+[projects."/Users/delanding/ProjDYDoing/GitSelf/TowerDefense"]
+trust_level = "trusted"
+
+[projects."/Users/delanding/ProjDYDoing/GitSelf/deepworker"]
+trust_level = "trusted"
+
+[projects."/Users/delanding/devsoft"]
+trust_level = "trusted"
