@@ -4,3 +4,5 @@ end
 
 # mise
 ~/.local/bin/mise activate fish | source
+alias vim='nvim'
+
