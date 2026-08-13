@@ -28,6 +28,7 @@ class MyToolsBrowserTest(unittest.TestCase):
             viewport={"width": 1440, "height": 900}
         )
         self.page = self.context.new_page()
+        self.page.set_default_timeout(3000)
         self.page.goto(PAGE_URL)
 
     def tearDown(self):
@@ -58,6 +59,44 @@ class MyToolsBrowserTest(unittest.TestCase):
         self.assertLessEqual(
             workspace.locator(".compact-toolbar").bounding_box()["height"], 70
         )
+
+    def test_workspaces_execute_without_cross_talk(self):
+        left, right = self.open_split()
+        left.locator(".workspace-input").fill('{"side":"left"}')
+        right.locator(".workspace-input").fill("hello right")
+        left.get_by_role("button", name="格式化", exact=True).click()
+        right.get_by_role("tab", name="编解码").click()
+        right.get_by_role("button", name="Base64 编码", exact=True).click()
+        self.assertIn('"side"', left.locator(".workspace-output").inner_text())
+        self.assertEqual(
+            right.locator(".workspace-output").inner_text().strip(),
+            "aGVsbG8gcmlnaHQ=",
+        )
+
+    def test_selected_command_keeps_dimensions(self):
+        workspace = self.page.locator('[data-workspace-id="a"]')
+        command = workspace.get_by_role("button", name="格式化", exact=True)
+        before = command.bounding_box()
+        workspace.locator(".workspace-input").fill("{}")
+        command.click()
+        after = command.bounding_box()
+        self.assertAlmostEqual(before["width"], after["width"], delta=0.5)
+        self.assertAlmostEqual(before["height"], after["height"], delta=0.5)
+        self.assertEqual(command.get_attribute("aria-pressed"), "true")
+
+    def test_copy_button_targets_only_its_workspace(self):
+        self.context.grant_permissions(["clipboard-read", "clipboard-write"])
+        left, right = self.open_split()
+        left.locator(".workspace-input").fill("left")
+        right.locator(".workspace-input").fill("right")
+        left.get_by_role("tab", name="文本").click()
+        right.get_by_role("tab", name="文本").click()
+        left.get_by_role("button", name="转大写").click()
+        right.get_by_role("button", name="转大写").click()
+        right.get_by_role("button", name="复制结果").click()
+        self.assertEqual(self.page.evaluate("navigator.clipboard.readText()"), "RIGHT")
+        self.assertIn("复制成功", right.locator(".workspace-notice").inner_text())
+        self.assertEqual(left.locator(".workspace-notice").inner_text(), "")
 
 
 if __name__ == "__main__":

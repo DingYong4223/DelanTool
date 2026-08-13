@@ -13,6 +13,26 @@
 
 window.TAB = "  ";
 
+var activeToolContext = null;
+
+function getActiveInput(){
+  if(!activeToolContext) throw new Error("未指定工作区");
+  return activeToolContext.input;
+}
+
+function getActiveOutput(){
+  if(!activeToolContext) throw new Error("未指定工作区");
+  return activeToolContext.output;
+}
+
+function showActiveError(message){
+  if(activeToolContext){
+    activeToolContext.fail(String(message));
+    return;
+  }
+  window.console.error(message);
+}
+
 
 
 function IsArray(obj) {
@@ -33,7 +53,7 @@ String.prototype.replaceAll = function(s1,s2) {
 
 function Process(){
   
-  var json = document.getElementById("RawJson").value;
+  var json = getActiveInput().value;
   json=json.replaceAll("\n","");
 
   var html = "";
@@ -46,29 +66,29 @@ function Process(){
 
     html = ProcessObject(obj[0], 0, false, false, false);
 
-    document.getElementById("Canvas").innerHTML = "<PRE class='CodeContainer'>"+html+"</PRE>";
+    getActiveOutput().innerHTML = "<PRE class='CodeContainer'>"+html+"</PRE>";
 
   }catch(e){
 
-    alert("JSON语法错误,不能格式化,错误信息:\n"+e.message);
+    showActiveError("JSON语法错误,不能格式化,错误信息:\n"+e.message);
 
-    document.getElementById("Canvas").innerHTML = "";
+    getActiveOutput().innerHTML = "";
 
   }
 
 }
 
 function Process1(){
-  var json = document.getElementById("RawJson").value;
+  var json = getActiveInput().value;
   json=json.replaceAll("\n","");
   var html = "";
   try{
     if(json == "") json = "\"\"";
     html = ProcessParams(json);
-    document.getElementById("Canvas").innerHTML = "<PRE class='CodeContainer'>"+html+"</PRE>";
+    getActiveOutput().innerHTML = "<PRE class='CodeContainer'>"+html+"</PRE>";
   }catch(e){
-    alert("语法错误,不能格式化,错误信息:\n"+e.message);
-    document.getElementById("Canvas").innerHTML = "";
+    showActiveError("语法错误,不能格式化,错误信息:\n"+e.message);
+    getActiveOutput().innerHTML = "";
   }
 }
 
@@ -85,70 +105,70 @@ function ProcessParams(obj){
 }
 
 function Base64Encode(){
-	var input = document.getElementById("RawJson").value;
+	var input = getActiveInput().value;
 	try{
 		if(input == ""){
-			alert("请输入要编码的内容");
+			showActiveError("请输入要编码的内容");
 			return;
 		}
 		var encoded = btoa(unescape(encodeURIComponent(input)));
-		document.getElementById("Canvas").innerHTML = "<PRE class='CodeContainer'>"+encoded+"</PRE>";
+		getActiveOutput().innerHTML = "<PRE class='CodeContainer'>"+encoded+"</PRE>";
 	}catch(e){
-		alert("Base64编码失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("Base64编码失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 function Base64Decode(){
-	var input = document.getElementById("RawJson").value;
+	var input = getActiveInput().value;
 	try{
 		if(input == ""){
-			alert("请输入要解码的Base64内容");
+			showActiveError("请输入要解码的Base64内容");
 			return;
 		}
 		var decoded = decodeURIComponent(escape(atob(input)));
-		document.getElementById("Canvas").innerHTML = "<PRE class='CodeContainer'>"+decoded+"</PRE>";
+		getActiveOutput().innerHTML = "<PRE class='CodeContainer'>"+decoded+"</PRE>";
 	}catch(e){
-		alert("Base64解码失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("Base64解码失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 function UrlEncode(){
-	var input = document.getElementById("RawJson").value;
+	var input = getActiveInput().value;
 	try{
 		if(input == ""){
-			alert("请输入要编码的内容");
+			showActiveError("请输入要编码的内容");
 			return;
 		}
 		var encoded = encodeURIComponent(input);
-		document.getElementById("Canvas").innerHTML = "<PRE class='CodeContainer'>"+encoded+"</PRE>";
+		getActiveOutput().innerHTML = "<PRE class='CodeContainer'>"+encoded+"</PRE>";
 	}catch(e){
-		alert("URL编码失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("URL编码失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 function UrlDecode(){
-	var input = document.getElementById("RawJson").value;
+	var input = getActiveInput().value;
 	try{
 		if(input == ""){
-			alert("请输入要解码的URL编码内容");
+			showActiveError("请输入要解码的URL编码内容");
 			return;
 		}
 		var decoded = decodeURIComponent(input);
-		document.getElementById("Canvas").innerHTML = "<PRE class='CodeContainer'>"+decoded+"</PRE>";
+		getActiveOutput().innerHTML = "<PRE class='CodeContainer'>"+decoded+"</PRE>";
 	}catch(e){
-		alert("URL解码失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("URL解码失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 function MD5Decode(){
-	var input = document.getElementById("RawJson").value;
+	var input = getActiveInput().value;
 	try{
 		if(input == ""){
-			alert("请输入要解码的MD5哈希值");
+			showActiveError("请输入要解码的MD5哈希值");
 			return;
 		}
 		// 清除空格和换行
@@ -156,7 +176,7 @@ function MD5Decode(){
 		
 		// 验证是否是有效的MD5格式（32位16进制）
 		if(!/^[a-fA-F0-9]{32}$/.test(input)){
-			alert("输入的不是有效的MD5哈希值（需要32位16进制字符）");
+			showActiveError("输入的不是有效的MD5哈希值（需要32位16进制字符）");
 			return;
 		}
 		
@@ -171,25 +191,25 @@ function MD5Decode(){
 		resultHTML += "</ul>";
 		resultHTML += "</div>";
 		
-		document.getElementById("Canvas").innerHTML = resultHTML;
+		getActiveOutput().innerHTML = resultHTML;
 	}catch(e){
-		alert("MD5解码失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("MD5解码失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 function MD5EncodeUpper(){
-	var input = document.getElementById("RawJson").value;
+	var input = getActiveInput().value;
 	try{
 		if(input == ""){
-			alert("请输入要编码的内容");
+			showActiveError("请输入要编码的内容");
 			return;
 		}
 		var encoded = hex_md5(input).toUpperCase();
-		document.getElementById("Canvas").innerHTML = "<PRE class='CodeContainer'>"+encoded+"</PRE>";
+		getActiveOutput().innerHTML = "<PRE class='CodeContainer'>"+encoded+"</PRE>";
 	}catch(e){
-		alert("MD5编码失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("MD5编码失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
@@ -205,15 +225,15 @@ var hexcase=0;function hex_md5(a){return rstr2hex(rstr_md5(str2rstr_utf8(a)))}fu
 
 // ========== 时间戳转换 ==========
 function TimestampToDate(){
-	var input = document.getElementById("RawJson").value.trim();
+	var input = getActiveInput().value.trim();
 	try{
 		if(input == ""){
-			alert("请输入Unix时间戳（秒或毫秒）");
+			showActiveError("请输入Unix时间戳（秒或毫秒）");
 			return;
 		}
 		var ts = parseFloat(input);
 		if(isNaN(ts)){
-			alert("请输入有效的数字时间戳");
+			showActiveError("请输入有效的数字时间戳");
 			return;
 		}
 		// 自动判断秒级还是毫秒级（13位为毫秒，10位为秒）
@@ -227,15 +247,15 @@ function TimestampToDate(){
 		html += "<p>本地时间: <b style='color:#007777;'>"+result+"</b></p>";
 		html += "<p>UTC时间: <b style='color:#AA00AA;'>"+d.toUTCString()+"</b></p>";
 		html += "</div>";
-		document.getElementById("Canvas").innerHTML = html;
+		getActiveOutput().innerHTML = html;
 	}catch(e){
-		alert("时间戳转换失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("时间戳转换失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 function DateToTimestamp(){
-	var input = document.getElementById("RawJson").value.trim();
+	var input = getActiveInput().value.trim();
 	try{
 		if(input == ""){
 			// 输入为空则显示当前时间戳
@@ -245,12 +265,12 @@ function DateToTimestamp(){
 			html += "<p>秒级时间戳: <b style='color:#007777;'>"+Math.floor(now.getTime()/1000)+"</b></p>";
 			html += "<p>毫秒级时间戳: <b style='color:#AA00AA;'>"+now.getTime()+"</b></p>";
 			html += "</div>";
-			document.getElementById("Canvas").innerHTML = html;
+			getActiveOutput().innerHTML = html;
 			return;
 		}
 		var d = new Date(input);
 		if(isNaN(d.getTime())){
-			alert("请输入有效的日期时间（如：2024-01-01 12:00:00），或留空查看当前时间戳");
+			showActiveError("请输入有效的日期时间（如：2024-01-01 12:00:00），或留空查看当前时间戳");
 			return;
 		}
 		var html = "<div style='padding:10px;'>";
@@ -258,19 +278,19 @@ function DateToTimestamp(){
 		html += "<p>秒级时间戳: <b style='color:#007777;'>"+Math.floor(d.getTime()/1000)+"</b></p>";
 		html += "<p>毫秒级时间戳: <b style='color:#AA00AA;'>"+d.getTime()+"</b></p>";
 		html += "</div>";
-		document.getElementById("Canvas").innerHTML = html;
+		getActiveOutput().innerHTML = html;
 	}catch(e){
-		alert("日期转时间戳失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("日期转时间戳失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 // ========== HTML 编码/解码 ==========
 function HtmlEncode(){
-	var input = document.getElementById("RawJson").value;
+	var input = getActiveInput().value;
 	try{
 		if(input == ""){
-			alert("请输入要编码的内容");
+			showActiveError("请输入要编码的内容");
 			return;
 		}
 		var encoded = input
@@ -279,18 +299,18 @@ function HtmlEncode(){
 			.replace(/>/g, '&gt;')
 			.replace(/"/g, '&quot;')
 			.replace(/'/g, '&#39;');
-		document.getElementById("Canvas").innerHTML = "<PRE class='CodeContainer'>"+encoded+"</PRE>";
+		getActiveOutput().innerHTML = "<PRE class='CodeContainer'>"+encoded+"</PRE>";
 	}catch(e){
-		alert("HTML编码失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("HTML编码失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 function HtmlDecode(){
-	var input = document.getElementById("RawJson").value;
+	var input = getActiveInput().value;
 	try{
 		if(input == ""){
-			alert("请输入要解码的HTML内容");
+			showActiveError("请输入要解码的HTML内容");
 			return;
 		}
 		var decoded = input
@@ -300,16 +320,16 @@ function HtmlDecode(){
 			.replace(/&quot;/g, '"')
 			.replace(/&#39;/g, "'")
 			.replace(/&nbsp;/g, ' ');
-		document.getElementById("Canvas").innerHTML = "<PRE class='CodeContainer'>"+decoded+"</PRE>";
+		getActiveOutput().innerHTML = "<PRE class='CodeContainer'>"+decoded+"</PRE>";
 	}catch(e){
-		alert("HTML解码失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("HTML解码失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 // ========== 字符统计 ==========
 function CharCount(){
-	var input = document.getElementById("RawJson").value;
+	var input = getActiveInput().value;
 	try{
 		var charCount = input.length;
 		var noSpaceCount = input.replace(/\s/g, '').length;
@@ -334,86 +354,86 @@ function CharCount(){
 		html += "<tr><td style='padding:4px 16px 4px 0;color:#CC0000;font-weight:bold;'>单词数</td><td style='padding:4px;'><b>"+wordCount+"</b></td></tr>";
 		html += "<tr><td style='padding:4px 16px 4px 0;color:#CC0000;font-weight:bold;'>行数</td><td style='padding:4px;'><b>"+lineCount+"</b></td></tr>";
 		html += "</table></div>";
-		document.getElementById("Canvas").innerHTML = html;
+		getActiveOutput().innerHTML = html;
 	}catch(e){
-		alert("字符统计失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("字符统计失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 // ========== 大小写转换 ==========
 function ToUpperCase(){
-	var input = document.getElementById("RawJson").value;
+	var input = getActiveInput().value;
 	try{
 		if(input == ""){
-			alert("请输入要转换的内容");
+			showActiveError("请输入要转换的内容");
 			return;
 		}
-		document.getElementById("Canvas").innerHTML = "<PRE class='CodeContainer'>"+input.toUpperCase()+"</PRE>";
+		getActiveOutput().innerHTML = "<PRE class='CodeContainer'>"+input.toUpperCase()+"</PRE>";
 	}catch(e){
-		alert("转换失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("转换失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 function ToLowerCase(){
-	var input = document.getElementById("RawJson").value;
+	var input = getActiveInput().value;
 	try{
 		if(input == ""){
-			alert("请输入要转换的内容");
+			showActiveError("请输入要转换的内容");
 			return;
 		}
-		document.getElementById("Canvas").innerHTML = "<PRE class='CodeContainer'>"+input.toLowerCase()+"</PRE>";
+		getActiveOutput().innerHTML = "<PRE class='CodeContainer'>"+input.toLowerCase()+"</PRE>";
 	}catch(e){
-		alert("转换失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("转换失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 function ToTitleCase(){
-	var input = document.getElementById("RawJson").value;
+	var input = getActiveInput().value;
 	try{
 		if(input == ""){
-			alert("请输入要转换的内容");
+			showActiveError("请输入要转换的内容");
 			return;
 		}
 		var result = input.replace(/\b\w/g, function(c){ return c.toUpperCase(); });
-		document.getElementById("Canvas").innerHTML = "<PRE class='CodeContainer'>"+result+"</PRE>";
+		getActiveOutput().innerHTML = "<PRE class='CodeContainer'>"+result+"</PRE>";
 	}catch(e){
-		alert("转换失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("转换失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 // ========== JSON 压缩 ==========
 function JsonCompress(){
-	var json = document.getElementById("RawJson").value;
+	var json = getActiveInput().value;
 	try{
 		if(json.trim() == ""){
-			alert("请输入要压缩的JSON内容");
+			showActiveError("请输入要压缩的JSON内容");
 			return;
 		}
 		var obj = JSON.parse(json);
 		var compressed = JSON.stringify(obj);
-		document.getElementById("Canvas").innerHTML = "<PRE class='CodeContainer'>"+compressed+"</PRE>";
+		getActiveOutput().innerHTML = "<PRE class='CodeContainer'>"+compressed+"</PRE>";
 	}catch(e){
-		alert("JSON压缩失败,请检查JSON格式是否正确\n错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("JSON压缩失败,请检查JSON格式是否正确\n错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 // ========== Schema 格式化 ==========
 function SchemaFormat(){
-	var input = document.getElementById("RawJson").value.trim();
+	var input = getActiveInput().value.trim();
 	try{
 		if(input == ""){
-			alert("请输入Schema URL");
+			showActiveError("请输入Schema URL");
 			return;
 		}
 		// 提取 scheme（://前面的部分）
 		var schemeEnd = input.indexOf("://");
 		if(schemeEnd === -1){
-			alert("无效的Schema URL，缺少://");
+			showActiveError("无效的Schema URL，缺少://");
 			return;
 		}
 		var scheme = input.substring(0, schemeEnd);
@@ -466,29 +486,28 @@ function SchemaFormat(){
 			html += "<p><span style='color:#CC0000;font-weight:bold;'>Params:</span> <span style='color:#999;'>(无)</span></p>";
 		}
 		html += "</div>";
-		document.getElementById("Canvas").innerHTML = html;
+		getActiveOutput().innerHTML = html;
 	}catch(e){
-		alert("Schema格式化失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("Schema格式化失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 // ========== 二维码生成 ==========
 function GenerateQRCode(){
-	var input = document.getElementById("RawJson").value.trim();
+	var input = getActiveInput().value.trim();
 	try{
 		if(input == ""){
-			alert("请输入要生成二维码的内容");
+			showActiveError("请输入要生成二维码的内容");
 			return;
 		}
-		var canvas = document.getElementById("Canvas");
+		var canvas = getActiveOutput();
 		canvas.innerHTML = "";
 
 		var wrapper = document.createElement("div");
 		wrapper.style.padding = "10px";
 
 		var qrDiv = document.createElement("div");
-		qrDiv.id = "qrcode-output";
 		wrapper.appendChild(qrDiv);
 
 		var hint = document.createElement("p");
@@ -509,17 +528,17 @@ function GenerateQRCode(){
 			correctLevel: QRCode.CorrectLevel.M
 		});
 	}catch(e){
-		alert("二维码生成失败,错误信息:\n"+e.message);
-		document.getElementById("Canvas").innerHTML = "";
+		showActiveError("二维码生成失败,错误信息:\n"+e.message);
+		getActiveOutput().innerHTML = "";
 	}
 }
 
 // ========== 复制到剪贴板 ==========
 function CopyToClipboard(){
-	var canvas = document.getElementById("Canvas");
+	var canvas = getActiveOutput();
 	try{
 		if(!canvas || canvas.innerHTML.trim() == ""){
-			alert("内容区为空，无法复制");
+			showActiveError("内容区为空，无法复制");
 			return;
 		}
 		// 获取纯文本内容
@@ -528,9 +547,9 @@ function CopyToClipboard(){
 		// 使用现代 Clipboard API
 		if(navigator.clipboard && window.isSecureContext){
 			navigator.clipboard.writeText(text).then(function(){
-				alert("复制成功！");
+				showActiveError("复制成功！");
 			}, function(err){
-				alert("复制失败：" + err);
+				showActiveError("复制失败：" + err);
 			});
 		}else{
 			// 降级方案：使用 textarea
@@ -543,17 +562,17 @@ function CopyToClipboard(){
 			try{
 				var successful = document.execCommand('copy');
 				if(successful){
-					alert("复制成功！");
+					showActiveError("复制成功！");
 				}else{
-					alert("复制失败，请手动复制");
+					showActiveError("复制失败，请手动复制");
 				}
 			}catch(err){
-				alert("复制失败：" + err);
+				showActiveError("复制失败：" + err);
 			}
 			document.body.removeChild(textarea);
 		}
 	}catch(e){
-		alert("复制失败,错误信息:\n"+e.message);
+		showActiveError("复制失败,错误信息:\n"+e.message);
 	}
 }
 
@@ -829,6 +848,21 @@ button { cursor: pointer; }
 	overflow-x: auto;
 	overflow-y: hidden;
 }
+.tool-command {
+	flex: 0 0 auto;
+	border: 1px solid var(--border);
+	border-radius: 5px;
+	padding: 5px 8px;
+	background: #f9fbfc;
+	color: #274655;
+	font-size: 12px;
+	line-height: 1;
+}
+.tool-command[aria-pressed="true"] {
+	border-color: var(--tool-teal);
+	background: var(--tool-teal);
+	color: white;
+}
 .split-rail {
 	display: none;
 	align-items: center;
@@ -901,6 +935,111 @@ var TOOL_CATEGORIES = [
 	{ id: "generate", label: "生成" }
 ];
 
+var TOOL_REGISTRY = [
+	{ id: "json-format", category: "json", label: "格式化", run: Process },
+	{ id: "json-compress", category: "json", label: "压缩", run: JsonCompress },
+	{ id: "params-format", category: "json", label: "参数格式化", run: Process1 },
+	{ id: "schema-format", category: "json", label: "Schema 格式化", run: SchemaFormat },
+	{ id: "base64-encode", category: "codec", label: "Base64 编码", run: Base64Encode },
+	{ id: "base64-decode", category: "codec", label: "Base64 解码", run: Base64Decode },
+	{ id: "url-encode", category: "codec", label: "URL 编码", run: UrlEncode },
+	{ id: "url-decode", category: "codec", label: "URL 解码", run: UrlDecode },
+	{ id: "html-encode", category: "codec", label: "HTML 编码", run: HtmlEncode },
+	{ id: "html-decode", category: "codec", label: "HTML 解码", run: HtmlDecode },
+	{ id: "md5-encode", category: "codec", label: "MD5 编码", run: MD5EncodeUpper },
+	{ id: "md5-explain", category: "codec", label: "MD5 说明", run: MD5Decode },
+	{ id: "timestamp-date", category: "time", label: "时间戳 → 日期", run: TimestampToDate },
+	{ id: "date-timestamp", category: "time", label: "日期 → 时间戳", run: DateToTimestamp },
+	{ id: "uppercase", category: "text", label: "转大写", run: ToUpperCase },
+	{ id: "lowercase", category: "text", label: "转小写", run: ToLowerCase },
+	{ id: "titlecase", category: "text", label: "首字母大写", run: ToTitleCase },
+	{ id: "char-count", category: "text", label: "字符统计", run: CharCount },
+	{ id: "qrcode", category: "generate", label: "生成二维码", run: GenerateQRCode }
+];
+
+function workspaceContext(root) {
+	return {
+		root: root,
+		input: root.querySelector(".workspace-input"),
+		output: root.querySelector(".workspace-output"),
+		status: root.querySelector(".workspace-status"),
+		notice: root.querySelector(".workspace-notice"),
+		fail: function(message) {
+			this.output.textContent = message;
+			this.output.classList.add("output-error");
+			this.status.textContent = "执行失败";
+		}
+	};
+}
+
+function copyText(text) {
+	if(navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+	return new Promise(function(resolve, reject) {
+		var textarea = document.createElement("textarea");
+		textarea.value = text;
+		textarea.style.position = "fixed";
+		textarea.style.opacity = "0";
+		document.body.appendChild(textarea);
+		textarea.select();
+		try {
+			if(document.execCommand("copy")) resolve();
+			else reject(new Error("浏览器拒绝复制"));
+		} catch(error) {
+			reject(error);
+		} finally {
+			document.body.removeChild(textarea);
+		}
+	});
+}
+
+function copyWorkspaceOutput(root) {
+	var ctx = workspaceContext(root);
+	var text = ctx.output.innerText || ctx.output.textContent || "";
+	if(!text.trim()) {
+		ctx.notice.textContent = "结果区为空";
+		return;
+	}
+	copyText(text).then(function() {
+		ctx.notice.textContent = "复制成功";
+	}, function(error) {
+		ctx.notice.textContent = "复制失败：" + error.message;
+	});
+}
+
+function executeTool(root, tool) {
+	var ctx = workspaceContext(root);
+	ctx.output.classList.remove("output-error");
+	ctx.notice.textContent = "";
+	activeToolContext = ctx;
+	try {
+		tool.run(ctx);
+		root.querySelectorAll(".tool-command").forEach(function(button) {
+			button.setAttribute("aria-pressed", button.getAttribute("data-tool-id") === tool.id ? "true" : "false");
+		});
+		if(!ctx.output.classList.contains("output-error")) ctx.status.textContent = "已执行：" + tool.label;
+	} catch(error) {
+		ctx.fail(tool.label + "失败：" + error.message);
+	} finally {
+		activeToolContext = null;
+	}
+}
+
+function renderCommands(root, categoryId) {
+	var row = root.querySelector(".tool-command-row");
+	row.innerHTML = "";
+	TOOL_REGISTRY.forEach(function(tool) {
+		if(tool.category !== categoryId) return;
+		var button = document.createElement("button");
+		button.type = "button";
+		button.className = "tool-command";
+		button.setAttribute("data-tool-id", tool.id);
+		button.setAttribute("aria-pressed", "false");
+		button.textContent = tool.label;
+		button.addEventListener("click", function() { executeTool(root, tool); });
+		row.appendChild(button);
+	});
+}
+
 function renderCategoryTabs(root, activeCategory) {
 	var tablist = root.querySelector(".tool-category-tabs");
 	tablist.innerHTML = "";
@@ -912,8 +1051,13 @@ function renderCategoryTabs(root, activeCategory) {
 		button.setAttribute("data-category", category.id);
 		button.setAttribute("aria-selected", category.id === activeCategory ? "true" : "false");
 		button.textContent = category.label;
+		button.addEventListener("click", function() {
+			renderCategoryTabs(root, category.id);
+			renderCommands(root, category.id);
+		});
 		tablist.appendChild(button);
 	});
+	renderCommands(root, activeCategory);
 }
 
 function createWorkspace(id, label) {
@@ -926,6 +1070,9 @@ function createWorkspace(id, label) {
 		'<div class="output-heading"><span class="section-label">OUTPUT / 结果</span><button type="button" class="copy-output">复制结果</button></div>' +
 		'<div class="workspace-output Canvas" tabindex="0"></div><div class="workspace-notice" aria-live="polite"></div>';
 	renderCategoryTabs(root, "json");
+	root.querySelector(".copy-output").addEventListener("click", function() {
+		copyWorkspaceOutput(root);
+	});
 	return root;
 }
 
