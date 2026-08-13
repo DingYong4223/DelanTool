@@ -695,14 +695,162 @@ function GetRow(indent, data, isPropertyContent){
 </script>
 
 <style>
-.Canvas{ 
-	font: 10pt Georgia; 
-	background-color:#ECECEC; 
-	color:#000000; 
-	border:solid 1px #CECECE; 
-	overflow-x: hidden; 
-	overflow-y: auto; 
-	word-wrap: break-word; 
+:root {
+	--deep-sea: #173247;
+	--tool-teal: #2f7080;
+	--rail-mint: #70d6c2;
+	--work-white: #f7fafb;
+	--panel-mist: #dfe8ed;
+	--border: #c9d6dd;
+	--split-position: 50%;
+}
+* { box-sizing: border-box; }
+body {
+	margin: 0;
+	background: var(--panel-mist);
+	color: var(--deep-sea);
+	font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+button, textarea { font: inherit; }
+button { cursor: pointer; }
+.workbench-shell { min-height: 100vh; padding: 18px; }
+.workbench-header {
+	min-height: 48px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	padding: 0 18px;
+	border-radius: 12px 12px 0 0;
+	background: var(--deep-sea);
+	color: white;
+}
+.workbench-brand {
+	font: 700 13px SFMono-Regular, Consolas, monospace;
+	letter-spacing: .12em;
+}
+.workbench-brand span { color: var(--rail-mint); }
+.workbench-header-actions { display: flex; align-items: center; gap: 12px; }
+.workbench-mode { color: #b7cbd5; font-size: 12px; }
+.split-toggle {
+	border: 1px solid var(--rail-mint);
+	border-radius: 6px;
+	padding: 7px 11px;
+	background: var(--rail-mint);
+	color: var(--deep-sea);
+	font-weight: 700;
+}
+.workspace-stage {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	border: 1px solid #9db2bf;
+	border-top: 0;
+	border-radius: 0 0 12px 12px;
+	background: var(--work-white);
+	overflow: hidden;
+}
+.workspace-stage.split-open {
+	grid-template-columns: minmax(0, var(--split-position)) 12px minmax(0, calc(100% - var(--split-position)));
+}
+.tool-workspace { min-width: 0; padding: 16px; }
+.workspace-header, .output-heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+.workspace-header h2 { margin: 0; font-size: 14px; }
+.workspace-letter {
+	display: inline-grid;
+	place-items: center;
+	width: 22px;
+	height: 22px;
+	margin-right: 7px;
+	border-radius: 5px;
+	background: var(--deep-sea);
+	color: var(--rail-mint);
+	font: 700 11px SFMono-Regular, Consolas, monospace;
+}
+.workspace-status, .workspace-notice { color: #718692; font-size: 12px; }
+.section-label {
+	display: block;
+	margin: 10px 0 5px;
+	color: #526a78;
+	font: 700 10px SFMono-Regular, Consolas, monospace;
+	letter-spacing: .1em;
+}
+.workspace-input, .workspace-output {
+	width: 100%;
+	border: 1px solid #aabdc8;
+	border-radius: 7px;
+	background: white;
+}
+.workspace-input { min-height: 88px; padding: 9px; resize: vertical; }
+.workspace-output {
+	min-height: 176px;
+	padding: 10px;
+	overflow: auto;
+	background: #f0f4f6;
+}
+.copy-output { border: 0; background: transparent; color: var(--tool-teal); font-weight: 700; }
+.compact-toolbar {
+	height: 64px;
+	overflow: hidden;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: white;
+}
+.tool-category-tabs {
+	display: grid;
+	grid-template-columns: repeat(5, minmax(0, 1fr));
+	height: 27px;
+}
+.tool-category-tab {
+	min-width: 0;
+	border: 0;
+	border-right: 1px solid var(--border);
+	background: #e3ebef;
+	color: #526c79;
+	font-size: 12px;
+	font-weight: 700;
+}
+.tool-category-tab:last-child { border-right: 0; }
+.tool-category-tab[aria-selected="true"] {
+	background: white;
+	color: var(--tool-teal);
+	box-shadow: inset 0 -2px var(--tool-teal);
+}
+.tool-command-row {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	height: 36px;
+	padding: 0 6px;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.split-rail {
+	display: none;
+	align-items: center;
+	justify-content: center;
+	background: #d4e0e6;
+	cursor: col-resize;
+	touch-action: none;
+}
+.split-open .split-rail { display: flex; }
+.split-grip {
+	width: 18px;
+	height: 44px;
+	display: grid;
+	place-items: center;
+	border-radius: 10px;
+	background: var(--deep-sea);
+	color: var(--rail-mint);
+}
+.Canvas{
+	font: 10pt SFMono-Regular, Consolas, monospace;
+	color:#000000;
+	word-wrap: break-word;
 	white-space: pre-wrap;
 }
 .ObjectBrace{ color:#00AA00; font-weight:bold;}
@@ -721,83 +869,81 @@ PRE.CodeContainer{
 	word-wrap: break-word; 
 	overflow-wrap: break-word;
 }
+button:focus-visible, textarea:focus-visible, [role="separator"]:focus-visible {
+	outline: 3px solid var(--rail-mint);
+	outline-offset: 2px;
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 
 <body>
+<main class="workbench-shell" id="WorkbenchShell">
+	<header class="workbench-header">
+		<div class="workbench-brand">MY TOOLS <span>/ WORKBENCH</span></div>
+		<div class="workbench-header-actions">
+			<span class="workbench-mode" id="WorkbenchMode">单工作区 · 本地运行</span>
+			<button type="button" class="split-toggle" id="SplitToggle" aria-pressed="false">开启分栏</button>
+		</div>
+	</header>
+	<div class="workspace-stage" id="WorkspaceStage">
+		<div id="WorkspaceAHost"></div>
+		<div class="split-rail" id="SplitRail" role="separator" aria-label="调整左右工作区宽度" aria-orientation="vertical" aria-valuemin="30" aria-valuemax="70" aria-valuenow="50" tabindex="0"><span class="split-grip" aria-hidden="true">⋮</span></div>
+		<div id="WorkspaceBHost" hidden></div>
+	</div>
+</main>
+<script>
+var TOOL_CATEGORIES = [
+	{ id: "json", label: "JSON" },
+	{ id: "codec", label: "编解码" },
+	{ id: "time", label: "时间" },
+	{ id: "text", label: "文本" },
+	{ id: "generate", label: "生成" }
+];
 
-<h3 style="margin-bottom:2px">原始JSON代码格式化及着色</h3>
-<!--nav-->
-﻿<script>
-	//if (window == top)
-        // top.location.href = "http://www.bejson.com/go.html?u="+location.href;
+function renderCategoryTabs(root, activeCategory) {
+	var tablist = root.querySelector(".tool-category-tabs");
+	tablist.innerHTML = "";
+	TOOL_CATEGORIES.forEach(function(category) {
+		var button = document.createElement("button");
+		button.type = "button";
+		button.className = "tool-category-tab";
+		button.setAttribute("role", "tab");
+		button.setAttribute("data-category", category.id);
+		button.setAttribute("aria-selected", category.id === activeCategory ? "true" : "false");
+		button.textContent = category.label;
+		tablist.appendChild(button);
+	});
+}
+
+function createWorkspace(id, label) {
+	var root = document.createElement("section");
+	root.className = "tool-workspace";
+	root.setAttribute("data-workspace-id", id);
+	root.innerHTML = '<header class="workspace-header"><h2><span class="workspace-letter">' + label + '</span>工作区 ' + label + '</h2><span class="workspace-status" aria-live="polite">等待输入</span></header>' +
+		'<label class="section-label">INPUT / 输入<textarea class="workspace-input" rows="5"></textarea></label>' +
+		'<div class="section-label">TOOLS / 紧凑工具带</div><div class="compact-toolbar"><div class="tool-category-tabs" role="tablist" aria-label="工具类别"></div><div class="tool-command-row" role="group" aria-label="当前类别工具"></div></div>' +
+		'<div class="output-heading"><span class="section-label">OUTPUT / 结果</span><button type="button" class="copy-output">复制结果</button></div>' +
+		'<div class="workspace-output Canvas" tabindex="0"></div><div class="workspace-notice" aria-live="polite"></div>';
+	renderCategoryTabs(root, "json");
+	return root;
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+	var stage = document.getElementById("WorkspaceStage");
+	var hostB = document.getElementById("WorkspaceBHost");
+	var toggle = document.getElementById("SplitToggle");
+	document.getElementById("WorkspaceAHost").appendChild(createWorkspace("a", "A"));
+	hostB.appendChild(createWorkspace("b", "B"));
+	toggle.addEventListener("click", function() {
+		var open = !stage.classList.contains("split-open");
+		stage.classList.toggle("split-open", open);
+		hostB.hidden = !open;
+		toggle.setAttribute("aria-pressed", open ? "true" : "false");
+		toggle.textContent = open ? "关闭分栏" : "开启分栏";
+		document.getElementById("WorkbenchMode").textContent = open ? "双工作区 · 本地运行" : "单工作区 · 本地运行";
+	});
+});
 </script>
-<!--[if lt IE 7]>
-<script src="http://kainy.googlecode.com/svn/trunk/ie6/killie6.utf-8.js"></script>
-<![endif]-->
-<style>
-.new{
-	color:red;
-	font-weight:bold;
-}
-
-a {
-    color: #3366CC;
-    text-decoration: none;
-}
-</style>
-<!--nav-->
-
-<div>请在下方输入你的JSON:</div>
-<textarea id="RawJson" rows="8" style="width:100%"></textarea><BR/>
-<div style="display:inline-block; vertical-align:top; margin-right:10px;">
-<input type="Button" value="Json格式化" onClick="Process()" style="display:block; margin-bottom:5px;"/>
-<input type="Button" value="参数格式化" onClick="Process1()" style="display:block;"/>
-</div>
-<div style="display:inline-block; vertical-align:top; margin-right:10px;">
-<input type="Button" value="Base64编码" onClick="Base64Encode()" style="display:block; margin-bottom:5px;"/>
-<input type="Button" value="Base64解码" onClick="Base64Decode()" style="display:block;"/>
-</div>
-<div style="display:inline-block; vertical-align:top; margin-right:10px;">
-<input type="Button" value="MD5编码" onClick="MD5EncodeUpper()" style="display:block; margin-bottom:5px;"/>
-<input type="Button" value="MD5解码" onClick="MD5Decode()" style="display:block;"/>
-</div>
-<div style="display:inline-block; vertical-align:top; margin-right:10px;">
-<input type="Button" value="URL编码" onClick="UrlEncode()" style="display:block; margin-bottom:5px;"/>
-<input type="Button" value="URL解码" onClick="UrlDecode()" style="display:block;"/>
-</div>
-<div style="display:inline-block; vertical-align:top; margin-right:10px;">
-<input type="Button" value="HTML编码" onClick="HtmlEncode()" style="display:block; margin-bottom:5px;"/>
-<input type="Button" value="HTML解码" onClick="HtmlDecode()" style="display:block;"/>
-</div>
-<div style="display:inline-block; vertical-align:top; margin-right:10px;">
-<input type="Button" value="时间戳→日期" onClick="TimestampToDate()" style="display:block; margin-bottom:5px;"/>
-<input type="Button" value="日期→时间戳" onClick="DateToTimestamp()" style="display:block;"/>
-</div>
-<div style="display:inline-block; vertical-align:top; margin-right:10px;">
-<input type="Button" value="转大写" onClick="ToUpperCase()" style="display:block; margin-bottom:5px;"/>
-<input type="Button" value="转小写" onClick="ToLowerCase()" style="display:block;"/>
-</div>
-<div style="display:inline-block; vertical-align:top; margin-right:10px;">
-<input type="Button" value="首字母大写" onClick="ToTitleCase()" style="display:block; margin-bottom:5px;"/>
-<input type="Button" value="字符统计" onClick="CharCount()" style="display:block;"/>
-</div>
-<div style="display:inline-block; vertical-align:top; margin-right:10px;">
-<input type="Button" value="JSON压缩" onClick="JsonCompress()" style="display:block; margin-bottom:5px;"/>
-<input type="Button" value="Schema格式化" onClick="SchemaFormat()" style="display:block;"/>
-</div>
-<div style="display:inline-block; vertical-align:top; margin-right:10px;">
-<input type="Button" value="生成二维码" onClick="GenerateQRCode()" style="display:block; margin-bottom:5px;"/>
-</div>
-<div style="display:inline-block; vertical-align:top;">
-<input type="Button" value="复制内容" onClick="CopyToClipboard()" style="display:block; margin-bottom:5px;"/>
-</div>
-<BR/>
-<div id="Canvas" class="Canvas"></div>
-<div style="display:none">
-<!--stat--><!--foot-->
-<!--foot-->
-</div>
 </body>
 </html>
