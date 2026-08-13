@@ -769,7 +769,7 @@ button { cursor: pointer; }
 	overflow: hidden;
 }
 .workspace-stage.split-open {
-	grid-template-columns: minmax(0, var(--split-position)) 12px minmax(0, calc(100% - var(--split-position)));
+	grid-template-columns: minmax(0, var(--split-position)) 12px minmax(0, 1fr);
 }
 .tool-workspace { min-width: 0; padding: 16px; }
 .workspace-header, .output-heading {
@@ -906,6 +906,16 @@ PRE.CodeContainer{
 button:focus-visible, textarea:focus-visible, [role="separator"]:focus-visible {
 	outline: 3px solid var(--rail-mint);
 	outline-offset: 2px;
+}
+@media (max-width: 860px) {
+	.workbench-shell { padding: 8px; }
+	.workbench-header { align-items: flex-start; padding: 12px; }
+	.workspace-stage.split-open { grid-template-columns: minmax(0, 1fr); }
+	.split-open .split-rail { display: none; }
+	#WorkspaceBHost { border-top: 1px solid #bdccd5; }
+}
+@media (prefers-reduced-motion: no-preference) {
+	.split-toggle, .tool-command { transition: background-color 140ms ease, color 140ms ease; }
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -1076,20 +1086,96 @@ function createWorkspace(id, label) {
 	return root;
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+var LAYOUT_KEY = "mytools.workbench.layout.v1";
+var splitState = { open: false, ratio: 50 };
+
+function clampRatio(value) {
+	return Math.max(30, Math.min(70, Math.round(value)));
+}
+
+function applySplitState() {
 	var stage = document.getElementById("WorkspaceStage");
+	var hostB = document.getElementById("WorkspaceBHost");
+	var rail = document.getElementById("SplitRail");
+	var toggle = document.getElementById("SplitToggle");
+	splitState.ratio = clampRatio(splitState.ratio);
+	stage.classList.toggle("split-open", splitState.open);
+	stage.style.setProperty("--split-position", splitState.ratio + "%");
+	hostB.hidden = !splitState.open;
+	rail.setAttribute("aria-valuenow", String(splitState.ratio));
+	toggle.setAttribute("aria-pressed", splitState.open ? "true" : "false");
+	toggle.textContent = splitState.open ? "关闭分栏" : "开启分栏";
+	document.getElementById("WorkbenchMode").textContent = splitState.open ? "双工作区 · 本地运行" : "单工作区 · 本地运行";
+}
+
+function saveSplitState() {
+	try {
+		localStorage.setItem(LAYOUT_KEY, JSON.stringify(splitState));
+	} catch(error) {
+		window.console.warn("无法保存分栏布局", error);
+	}
+}
+
+function restoreSplitState() {
+	try {
+		var saved = JSON.parse(localStorage.getItem(LAYOUT_KEY));
+		if(saved && typeof saved.open === "boolean" && typeof saved.ratio === "number") {
+			splitState.open = saved.open;
+			splitState.ratio = clampRatio(saved.ratio);
+		}
+	} catch(error) {
+		try { localStorage.removeItem(LAYOUT_KEY); } catch(ignore) {}
+	}
+	applySplitState();
+}
+
+function updateSplitRatio(ratio, persist) {
+	splitState.ratio = clampRatio(ratio);
+	applySplitState();
+	if(persist) saveSplitState();
+}
+
+function ratioFromPointer(event) {
+	var rect = document.getElementById("WorkspaceStage").getBoundingClientRect();
+	return clampRatio(((event.clientX - rect.left) / rect.width) * 100);
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+	var rail = document.getElementById("SplitRail");
 	var hostB = document.getElementById("WorkspaceBHost");
 	var toggle = document.getElementById("SplitToggle");
 	document.getElementById("WorkspaceAHost").appendChild(createWorkspace("a", "A"));
 	hostB.appendChild(createWorkspace("b", "B"));
 	toggle.addEventListener("click", function() {
-		var open = !stage.classList.contains("split-open");
-		stage.classList.toggle("split-open", open);
-		hostB.hidden = !open;
-		toggle.setAttribute("aria-pressed", open ? "true" : "false");
-		toggle.textContent = open ? "关闭分栏" : "开启分栏";
-		document.getElementById("WorkbenchMode").textContent = open ? "双工作区 · 本地运行" : "单工作区 · 本地运行";
+		splitState.open = !splitState.open;
+		applySplitState();
+		saveSplitState();
 	});
+	rail.addEventListener("pointerdown", function(event) {
+		if(window.matchMedia("(max-width: 860px)").matches) return;
+		rail.setPointerCapture(event.pointerId);
+		updateSplitRatio(ratioFromPointer(event), false);
+	});
+	rail.addEventListener("pointermove", function(event) {
+		if(rail.hasPointerCapture(event.pointerId)) updateSplitRatio(ratioFromPointer(event), false);
+	});
+	rail.addEventListener("pointerup", function(event) {
+		if(rail.hasPointerCapture(event.pointerId)) rail.releasePointerCapture(event.pointerId);
+		saveSplitState();
+	});
+	rail.addEventListener("dblclick", function() {
+		updateSplitRatio(50, true);
+	});
+	rail.addEventListener("keydown", function(event) {
+		var next = splitState.ratio;
+		if(event.key === "ArrowLeft") next -= 2;
+		else if(event.key === "ArrowRight") next += 2;
+		else if(event.key === "Home") next = 50;
+		else return;
+		event.preventDefault();
+		updateSplitRatio(next, true);
+	});
+	restoreSplitState();
 });
 </script>
 </body>
