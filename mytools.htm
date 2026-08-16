@@ -676,7 +676,6 @@ function GetRow(indent, data, isPropertyContent){
 	--work-white: #f7fafb;
 	--panel-mist: #dfe8ed;
 	--border: #c9d6dd;
-	--split-position: 50%;
 }
 * { box-sizing: border-box; }
 body {
@@ -715,18 +714,17 @@ button { cursor: pointer; }
 	font-weight: 700;
 }
 .workspace-stage {
-	display: grid;
-	grid-template-columns: minmax(0, 1fr);
+	display: flex;
+	align-items: stretch;
 	border: 1px solid #9db2bf;
 	border-top: 0;
 	border-radius: 0 0 12px 12px;
 	background: var(--work-white);
-	overflow: hidden;
+	overflow-x: auto;
+	overflow-y: hidden;
 }
-.workspace-stage.split-open {
-	grid-template-columns: minmax(0, var(--split-position)) 12px minmax(0, 1fr);
-}
-.tool-workspace { min-width: 0; padding: 16px; }
+.tool-workspace { flex: 1 1 0; min-width: 320px; padding: 16px; }
+.workspace-stage:not(.multi-open) .tool-workspace { min-width: 0; }
 .workspace-header, .output-heading {
 	display: flex;
 	align-items: center;
@@ -734,6 +732,22 @@ button { cursor: pointer; }
 	gap: 12px;
 }
 .workspace-header h2 { margin: 0; font-size: 14px; }
+.workspace-header-actions { display: flex; align-items: center; gap: 8px; }
+.workspace-close {
+	display: grid;
+	place-items: center;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border: 1px solid #b6c6cf;
+	border-radius: 5px;
+	background: transparent;
+	color: #526a78;
+	font-size: 19px;
+	line-height: 1;
+}
+.workspace-close:hover { border-color: #a33b3b; background: #fff0f0; color: #a33b3b; }
+.workspace-close[hidden] { display: none; }
 .workspace-letter {
 	display: inline-grid;
 	place-items: center;
@@ -821,14 +835,14 @@ button { cursor: pointer; }
 	color: white;
 }
 .split-rail {
-	display: none;
+	display: flex;
+	flex: 0 0 12px;
 	align-items: center;
 	justify-content: center;
 	background: #d4e0e6;
 	cursor: col-resize;
 	touch-action: none;
 }
-.split-open .split-rail { display: flex; }
 .split-grip {
 	width: 18px;
 	height: 44px;
@@ -867,9 +881,10 @@ button:focus-visible, textarea:focus-visible, [role="separator"]:focus-visible {
 @media (max-width: 860px) {
 	.workbench-shell { padding: 8px; }
 	.workbench-header { align-items: flex-start; padding: 12px; }
-	.workspace-stage.split-open { grid-template-columns: minmax(0, 1fr); }
-	.split-open .split-rail { display: none; }
-	#WorkspaceBHost { border-top: 1px solid #bdccd5; }
+	.workspace-stage { display: block; overflow-x: hidden; }
+	.tool-workspace { min-width: 0; }
+	.tool-workspace:not(:first-child) { border-top: 1px solid #bdccd5; }
+	.split-rail { display: none; }
 }
 @media (max-width: 480px) {
 	.workbench-header { flex-direction: column; align-items: stretch; gap: 8px; }
@@ -889,14 +904,10 @@ button:focus-visible, textarea:focus-visible, [role="separator"]:focus-visible {
 		<div class="workbench-brand">MY TOOLS <span>/ WORKBENCH</span></div>
 		<div class="workbench-header-actions">
 			<span class="workbench-mode" id="WorkbenchMode">单工作区 · 本地运行</span>
-			<button type="button" class="split-toggle" id="SplitToggle" aria-pressed="false">开启分栏</button>
+			<button type="button" class="split-toggle" id="SplitToggle">开启分栏</button>
 		</div>
 	</header>
-	<div class="workspace-stage" id="WorkspaceStage">
-		<div id="WorkspaceAHost"></div>
-		<div class="split-rail" id="SplitRail" role="separator" aria-label="调整左右工作区宽度" aria-orientation="vertical" aria-valuemin="30" aria-valuemax="70" aria-valuenow="50" tabindex="0"><span class="split-grip" aria-hidden="true">⋮</span></div>
-		<div id="WorkspaceBHost" hidden></div>
-	</div>
+	<div class="workspace-stage" id="WorkspaceStage"></div>
 </main>
 <script>
 var TOOL_CATEGORIES = [
@@ -1048,7 +1059,7 @@ function createWorkspace(id, label) {
 	var root = document.createElement("section");
 	root.className = "tool-workspace";
 	root.setAttribute("data-workspace-id", id);
-	root.innerHTML = '<header class="workspace-header"><h2><span class="workspace-letter">' + label + '</span>工作区 ' + label + '</h2><span class="workspace-status" aria-live="polite">等待输入</span></header>' +
+	root.innerHTML = '<header class="workspace-header"><h2><span class="workspace-letter">' + label + '</span>工作区 ' + label + '</h2><div class="workspace-header-actions"><span class="workspace-status" aria-live="polite">等待输入</span><button type="button" class="workspace-close" aria-label="关闭工作区 ' + label + '" title="关闭工作区">×</button></div></header>' +
 		'<label class="section-label">INPUT / 输入<textarea class="workspace-input" rows="5"></textarea></label>' +
 		'<div class="section-label">TOOLS / 紧凑工具带</div><div class="compact-toolbar"><div class="tool-category-tabs" role="tablist" aria-label="工具类别"></div><div class="tool-command-row" role="group" aria-label="当前类别工具"></div></div>' +
 		'<div class="output-heading"><span class="section-label">OUTPUT / 结果</span><button type="button" class="copy-output">复制结果</button></div>' +
@@ -1057,102 +1068,167 @@ function createWorkspace(id, label) {
 	root.querySelector(".copy-output").addEventListener("click", function() {
 		copyWorkspaceOutput(root);
 	});
+	root.querySelector(".workspace-close").addEventListener("click", function() {
+		removeWorkspace(root);
+	});
+	root.querySelector(".tool-command-row").addEventListener("scroll", function(event) {
+		updateCommandOverflow(event.currentTarget);
+	});
 	return root;
 }
 
 var LAYOUT_KEY = "mytools.workbench.layout.v1";
-var splitState = { open: false, ratio: 50 };
+var workspaceSequence = 0;
+var initialSplitRatio = 50;
 
 function clampRatio(value) {
 	return Math.max(30, Math.min(70, Math.round(value)));
 }
 
-function applySplitState() {
-	var stage = document.getElementById("WorkspaceStage");
-	var hostB = document.getElementById("WorkspaceBHost");
-	var rail = document.getElementById("SplitRail");
-	var toggle = document.getElementById("SplitToggle");
-	splitState.ratio = clampRatio(splitState.ratio);
-	stage.classList.toggle("split-open", splitState.open);
-	stage.style.setProperty("--split-position", splitState.ratio + "%");
-	hostB.hidden = !splitState.open;
-	rail.setAttribute("aria-valuenow", String(splitState.ratio));
-	toggle.setAttribute("aria-pressed", splitState.open ? "true" : "false");
-	toggle.textContent = splitState.open ? "关闭分栏" : "开启分栏";
-	document.getElementById("WorkbenchMode").textContent = splitState.open ? "双工作区 · 本地运行" : "单工作区 · 本地运行";
+function workspaceLabel(index) {
+	var label = "";
+	var value = index + 1;
+	while(value > 0) {
+		value -= 1;
+		label = String.fromCharCode(65 + value % 26) + label;
+		value = Math.floor(value / 26);
+	}
+	return label;
 }
 
-function saveSplitState() {
+function saveSplitRatio(ratio) {
+	initialSplitRatio = clampRatio(ratio);
 	try {
-		localStorage.setItem(LAYOUT_KEY, JSON.stringify(splitState));
+		localStorage.setItem(LAYOUT_KEY, JSON.stringify({ ratio: initialSplitRatio }));
 	} catch(error) {
 		window.console.warn("无法保存分栏布局", error);
 	}
 }
 
-function restoreSplitState() {
+function restoreSplitRatio() {
 	try {
 		var saved = JSON.parse(localStorage.getItem(LAYOUT_KEY));
-		if(saved && typeof saved.open === "boolean" && typeof saved.ratio === "number") {
-			splitState.open = saved.open;
-			splitState.ratio = clampRatio(saved.ratio);
-		}
+		if(saved && typeof saved.ratio === "number") initialSplitRatio = clampRatio(saved.ratio);
 	} catch(error) {
 		try { localStorage.removeItem(LAYOUT_KEY); } catch(ignore) {}
 	}
-	applySplitState();
 }
 
-function updateSplitRatio(ratio, persist) {
-	splitState.ratio = clampRatio(ratio);
-	applySplitState();
-	if(persist) saveSplitState();
+function setWorkspaceWidths(left, right, leftWidth, rightWidth) {
+	left.style.flex = "0 0 " + Math.round(leftWidth) + "px";
+	right.style.flex = "0 0 " + Math.round(rightWidth) + "px";
 }
 
-function ratioFromPointer(event) {
-	var rect = document.getElementById("WorkspaceStage").getBoundingClientRect();
-	return clampRatio(((event.clientX - rect.left) / rect.width) * 100);
+function updateRailValue(rail, left, right) {
+	var total = left.getBoundingClientRect().width + right.getBoundingClientRect().width;
+	var ratio = total ? Math.round(left.getBoundingClientRect().width / total * 100) : 50;
+	rail.setAttribute("aria-valuenow", String(ratio));
+	return ratio;
+}
+
+function resizeWorkspacePair(rail, left, right, delta) {
+	var leftWidth = left.getBoundingClientRect().width;
+	var rightWidth = right.getBoundingClientRect().width;
+	var minWidth = 280;
+	var appliedDelta = Math.max(minWidth - leftWidth, Math.min(rightWidth - minWidth, delta));
+	setWorkspaceWidths(left, right, leftWidth + appliedDelta, rightWidth - appliedDelta);
+	return updateRailValue(rail, left, right);
+}
+
+function createSplitRail(left, right) {
+	var rail = document.createElement("div");
+	rail.className = "split-rail";
+	rail.setAttribute("role", "separator");
+	rail.setAttribute("aria-label", "调整工作区宽度");
+	rail.setAttribute("aria-orientation", "vertical");
+	rail.setAttribute("aria-valuemin", "10");
+	rail.setAttribute("aria-valuemax", "90");
+	rail.setAttribute("aria-valuenow", "50");
+	rail.tabIndex = 0;
+	rail.innerHTML = '<span class="split-grip" aria-hidden="true">⋮</span>';
+	var startX = 0;
+	var startLeftWidth = 0;
+	var startRightWidth = 0;
+	rail.addEventListener("pointerdown", function(event) {
+		if(window.matchMedia("(max-width: 860px)").matches) return;
+		startX = event.clientX;
+		startLeftWidth = left.getBoundingClientRect().width;
+		startRightWidth = right.getBoundingClientRect().width;
+		rail.setPointerCapture(event.pointerId);
+	});
+	rail.addEventListener("pointermove", function(event) {
+		if(!rail.hasPointerCapture(event.pointerId)) return;
+		var minWidth = 280;
+		var delta = Math.max(minWidth - startLeftWidth, Math.min(startRightWidth - minWidth, event.clientX - startX));
+		setWorkspaceWidths(left, right, startLeftWidth + delta, startRightWidth - delta);
+		updateRailValue(rail, left, right);
+	});
+	rail.addEventListener("pointerup", function(event) {
+		if(!rail.hasPointerCapture(event.pointerId)) return;
+		rail.releasePointerCapture(event.pointerId);
+		if(document.querySelectorAll(".tool-workspace").length === 2) saveSplitRatio(updateRailValue(rail, left, right));
+	});
+	rail.addEventListener("dblclick", function() {
+		var total = left.getBoundingClientRect().width + right.getBoundingClientRect().width;
+		setWorkspaceWidths(left, right, total / 2, total / 2);
+		updateRailValue(rail, left, right);
+		if(document.querySelectorAll(".tool-workspace").length === 2) saveSplitRatio(50);
+	});
+	rail.addEventListener("keydown", function(event) {
+		if(event.key === "Home") {
+			var total = left.getBoundingClientRect().width + right.getBoundingClientRect().width;
+			setWorkspaceWidths(left, right, total / 2, total / 2);
+		} else if(event.key === "ArrowLeft") resizeWorkspacePair(rail, left, right, -20);
+		else if(event.key === "ArrowRight") resizeWorkspacePair(rail, left, right, 20);
+		else return;
+		event.preventDefault();
+		var ratio = updateRailValue(rail, left, right);
+		if(document.querySelectorAll(".tool-workspace").length === 2) saveSplitRatio(ratio);
+	});
+	return rail;
+}
+
+function refreshWorkspaceLayout() {
+	var stage = document.getElementById("WorkspaceStage");
+	stage.querySelectorAll(".split-rail").forEach(function(rail) { rail.remove(); });
+	var workspaces = Array.prototype.slice.call(stage.querySelectorAll(".tool-workspace"));
+	workspaces.forEach(function(workspace) {
+		workspace.style.flex = "";
+		workspace.querySelector(".workspace-close").hidden = workspaces.length === 1;
+	});
+	for(var index = 1; index < workspaces.length; index++) {
+		stage.insertBefore(createSplitRail(workspaces[index - 1], workspaces[index]), workspaces[index]);
+	}
+	stage.classList.toggle("multi-open", workspaces.length > 1);
+	document.getElementById("WorkbenchMode").textContent = workspaces.length === 1 ? "单工作区 · 本地运行" : workspaces.length + " 个工作区 · 本地运行";
+	if(workspaces.length === 2 && !window.matchMedia("(max-width: 860px)").matches) {
+		var availableWidth = stage.clientWidth - 12;
+		setWorkspaceWidths(workspaces[0], workspaces[1], availableWidth * initialSplitRatio / 100, availableWidth * (100 - initialSplitRatio) / 100);
+		updateRailValue(stage.querySelector(".split-rail"), workspaces[0], workspaces[1]);
+	}
+}
+
+function addWorkspace() {
+	var label = workspaceLabel(workspaceSequence);
+	var workspace = createWorkspace("workspace-" + (workspaceSequence + 1), label);
+	workspaceSequence += 1;
+	var stage = document.getElementById("WorkspaceStage");
+	stage.appendChild(workspace);
+	refreshWorkspaceLayout();
+	stage.scrollTo({ left: stage.scrollWidth, behavior: "smooth" });
+}
+
+function removeWorkspace(workspace) {
+	var stage = document.getElementById("WorkspaceStage");
+	if(stage.querySelectorAll(".tool-workspace").length === 1) return;
+	workspace.remove();
+	refreshWorkspaceLayout();
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-	var rail = document.getElementById("SplitRail");
-	var hostB = document.getElementById("WorkspaceBHost");
-	var toggle = document.getElementById("SplitToggle");
-	document.getElementById("WorkspaceAHost").appendChild(createWorkspace("a", "A"));
-	hostB.appendChild(createWorkspace("b", "B"));
-	toggle.addEventListener("click", function() {
-		splitState.open = !splitState.open;
-		applySplitState();
-		saveSplitState();
-	});
-	rail.addEventListener("pointerdown", function(event) {
-		if(window.matchMedia("(max-width: 860px)").matches) return;
-		rail.setPointerCapture(event.pointerId);
-		updateSplitRatio(ratioFromPointer(event), false);
-	});
-	rail.addEventListener("pointermove", function(event) {
-		if(rail.hasPointerCapture(event.pointerId)) updateSplitRatio(ratioFromPointer(event), false);
-	});
-	rail.addEventListener("pointerup", function(event) {
-		if(rail.hasPointerCapture(event.pointerId)) rail.releasePointerCapture(event.pointerId);
-		saveSplitState();
-	});
-	rail.addEventListener("dblclick", function() {
-		updateSplitRatio(50, true);
-	});
-	rail.addEventListener("keydown", function(event) {
-		var next = splitState.ratio;
-		if(event.key === "ArrowLeft") next -= 2;
-		else if(event.key === "ArrowRight") next += 2;
-		else if(event.key === "Home") next = 50;
-		else return;
-		event.preventDefault();
-		updateSplitRatio(next, true);
-	});
-	restoreSplitState();
-	document.querySelectorAll(".tool-command-row").forEach(function(row) {
-		row.addEventListener("scroll", function() { updateCommandOverflow(row); });
-	});
+	restoreSplitRatio();
+	addWorkspace();
+	document.getElementById("SplitToggle").addEventListener("click", addWorkspace);
 	window.addEventListener("resize", function() {
 		document.querySelectorAll(".tool-command-row").forEach(updateCommandOverflow);
 	});
