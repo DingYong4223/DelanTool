@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>原始JSON代码格式化及着色</title>
@@ -88,6 +88,58 @@ function Process(){
 
   }
 
+}
+
+function DecodeBase64Utf8(value){
+  var binary = atob(value.replace(/\s+/g, ""));
+  var encoded = "";
+  for(var i = 0; i < binary.length; i++){
+    encoded += "%" + ("00" + binary.charCodeAt(i).toString(16)).slice(-2);
+  }
+  return decodeURIComponent(encoded);
+}
+
+function DecodePayloadFields(value, path){
+  if(Array.isArray(value)){
+    return value.map(function(item, index){
+      return DecodePayloadFields(item, path + "[" + index + "]");
+    });
+  }
+  if(!value || typeof value !== "object") return value;
+
+  Object.keys(value).forEach(function(key){
+    var fieldPath = path ? path + "." + key : key;
+    if(key === "payload" && typeof value[key] === "string"){
+      var decoded;
+      try{
+        decoded = DecodeBase64Utf8(value[key]);
+      }catch(error){
+        throw new Error(fieldPath + " Base64解码失败: " + error.message);
+      }
+      try{
+        value[key] = JSON.parse(decoded);
+      }catch(error){
+        throw new Error(fieldPath + " 解码结果不是有效JSON: " + error.message);
+      }
+    }
+    value[key] = DecodePayloadFields(value[key], fieldPath);
+  });
+  return value;
+}
+
+function ProcessPayloadDecoded(){
+  var json = getActiveInput().value.trim();
+  try{
+    if(json.charAt(0) === "(" && json.charAt(json.length - 1) === ")"){
+      json = json.slice(1, -1).trim();
+    }
+    if(json === "") json = '""';
+    var obj = DecodePayloadFields(JSON.parse(json), "");
+    var html = ProcessObject(obj, 0, false, false, false);
+    getActiveOutput().innerHTML = "<PRE class='CodeContainer'>" + html + "</PRE>";
+  }catch(error){
+    showActiveError("payload解码格式化失败,错误信息:\n" + error.message);
+  }
 }
 
 function Process1(){
@@ -686,7 +738,12 @@ body {
 }
 button, textarea { font: inherit; }
 button { cursor: pointer; }
-.workbench-shell { min-height: 100vh; padding: 18px; }
+.workbench-shell {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	padding: 18px;
+}
 .workbench-header {
 	min-height: 48px;
 	display: flex;
@@ -715,6 +772,7 @@ button { cursor: pointer; }
 }
 .workspace-stage {
 	display: flex;
+	flex: 1 1 auto;
 	align-items: stretch;
 	border: 1px solid #9db2bf;
 	border-top: 0;
@@ -723,7 +781,13 @@ button { cursor: pointer; }
 	overflow-x: auto;
 	overflow-y: hidden;
 }
-.tool-workspace { flex: 1 1 0; min-width: 320px; padding: 16px; }
+.tool-workspace {
+	min-width: 320px;
+	display: flex;
+	flex: 1 1 0;
+	flex-direction: column;
+	padding: 16px;
+}
 .workspace-stage:not(.multi-open) .tool-workspace { min-width: 0; }
 .workspace-header, .output-heading {
 	display: flex;
@@ -775,6 +839,7 @@ button { cursor: pointer; }
 }
 .workspace-input { min-height: 88px; padding: 9px; resize: vertical; }
 .workspace-output {
+	flex: 1 1 auto;
 	min-height: 176px;
 	padding: 10px;
 	overflow: auto;
@@ -881,8 +946,9 @@ button:focus-visible, textarea:focus-visible, [role="separator"]:focus-visible {
 @media (max-width: 860px) {
 	.workbench-shell { padding: 8px; }
 	.workbench-header { align-items: flex-start; padding: 12px; }
-	.workspace-stage { display: block; overflow-x: hidden; }
-	.tool-workspace { min-width: 0; }
+	.workspace-stage { flex-direction: column; overflow-x: hidden; overflow-y: visible; }
+	.tool-workspace { min-width: 0; min-height: calc(100vh - 80px); flex: 0 0 auto; }
+	.workspace-stage:not(.multi-open) .tool-workspace { min-height: 0; flex: 1 1 auto; }
 	.tool-workspace:not(:first-child) { border-top: 1px solid #bdccd5; }
 	.split-rail { display: none; }
 }
@@ -920,6 +986,7 @@ var TOOL_CATEGORIES = [
 
 var TOOL_REGISTRY = [
 	{ id: "json-format", category: "json", label: "格式化", run: Process },
+	{ id: "json-payload-format", category: "json", label: "格式化(payload解码)", run: ProcessPayloadDecoded },
 	{ id: "json-compress", category: "json", label: "压缩", run: JsonCompress },
 	{ id: "params-format", category: "json", label: "参数格式化", run: Process1 },
 	{ id: "schema-format", category: "json", label: "Schema 格式化", run: SchemaFormat },
