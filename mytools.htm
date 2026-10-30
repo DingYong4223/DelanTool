@@ -64,14 +64,74 @@ String.prototype.replaceAll = function(s1,s2) {
     return this.replace(new RegExp(s1,"gm"),s2); 
 }
 
+function StripJsonComments(json){
+  var result = "";
+  var inString = false;
+  var escaped = false;
+  var inLineComment = false;
+  var inBlockComment = false;
+
+  for(var i = 0; i < json.length; i++){
+    var char = json.charAt(i);
+    var next = json.charAt(i + 1);
+
+    if(inLineComment){
+      if(char === "\n" || char === "\r"){
+        inLineComment = false;
+        result += char;
+      }
+      continue;
+    }
+    if(inBlockComment){
+      if(char === "*" && next === "/"){
+        inBlockComment = false;
+        result += "  ";
+        i++;
+      }else if(char === "\n" || char === "\r"){
+        result += char;
+      }else{
+        result += " ";
+      }
+      continue;
+    }
+    if(inString){
+      result += char;
+      if(escaped){
+        escaped = false;
+      }else if(char === "\\"){
+        escaped = true;
+      }else if(char === '"'){
+        inString = false;
+      }
+      continue;
+    }
+    if(char === '"'){
+      inString = true;
+      result += char;
+    }else if(char === "/" && next === "/"){
+      inLineComment = true;
+      i++;
+    }else if(char === "/" && next === "*"){
+      inBlockComment = true;
+      i++;
+    }else{
+      result += char;
+    }
+  }
+
+  if(inBlockComment) throw new Error("注释未闭合");
+  return result;
+}
+
 function Process(){
   
   var json = getActiveInput().value;
-  json=json.replaceAll("\n","");
-
   var html = "";
 
   try{
+
+    json = StripJsonComments(json);
+    json=json.replaceAll("\n","");
 
     if(json == "") json = "\"\"";
 
@@ -128,7 +188,7 @@ function DecodePayloadFields(value, path){
 }
 
 function ProcessPayloadDecoded(){
-  var json = getActiveInput().value.trim();
+  var json = StripJsonComments(getActiveInput().value).trim();
   try{
     if(json.charAt(0) === "(" && json.charAt(json.length - 1) === ")"){
       json = json.slice(1, -1).trim();
@@ -458,6 +518,7 @@ function ToTitleCase(){
 function JsonCompress(){
 	var json = getActiveInput().value;
 	try{
+		json = StripJsonComments(json);
 		if(json.trim() == ""){
 			showActiveError("请输入要压缩的JSON内容");
 			return;

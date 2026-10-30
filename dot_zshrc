@@ -62,4 +62,13 @@ export PATH="/Users/delanding/.kimi-code/bin:$PATH"
 
 
 
+
 source ~/.moaextrc
+alias mvn8='JAVA_HOME=$(/usr/libexec/java_home -v 1.8) mvn'
+alias mvn8='JAVA_HOME=$(/usr/libexec/java_home -v 1.8) mvn'
+
+# 运行 JDK8 的 java 命令
+function java8() {
+  local jh=$(/usr/libexec/java_home -v 1.8)
+  "$jh/bin/java" "$@"
+}
